@@ -17,8 +17,8 @@ class CreateFoundation(StatesGroup):
 
 
 # async def create_foundation(call: types.CallbackQuery, state: FSMContext = '*'):
-async def create_foundation(call: types.CallbackQuery):
-    await call.message.edit_text('Введите название организации', reply_markup=None)
+async def create_foundation(message: types.Message):
+    await message.edit_text('Введите название организации', reply_markup=None)
     # await state.set_state(CreateFoundation.enter_name)
     await CreateFoundation.enter_name.set()
 
@@ -43,6 +43,7 @@ async def enter_foundation_address(message: types.Message, state: FSMContext):
                                           address=foundation['enter_address'])
     print(res)
     await state.finish()
+    # await message.answer('Спасибо')
     await start_menu(message)
 
 

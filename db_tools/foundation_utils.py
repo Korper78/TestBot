@@ -6,7 +6,9 @@ class FoundTools:
 
     @staticmethod
     async def get_foundations() -> list | None:
-        return await DbCRUD.get_all(db_object=Foundation)
+        foundations = await DbCRUD.get_all(db_object=Foundation)
+        # return await DbCRUD.get_all(db_object=Foundation)
+        return [foundation[0] for foundation in foundations]
 
     @staticmethod
     async def get_foundation(foundation_id: int) -> Foundation | None:

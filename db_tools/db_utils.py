@@ -30,14 +30,15 @@ class DbCRUD:
 
     @staticmethod
     @create_session
-    async def add(db_object: TGBase, session: AsyncSession = None) -> bool:
+    async def add(db_object: TGBase, session: AsyncSession = None) -> int | None:
         session.add(db_object)
         try:
             await session.commit()
+            await session.refresh(db_object)
         except IntegrityError as e:
             print(e)
-            return False
-        return True
+            return None
+        return db_object.id
 
     @staticmethod
     @create_session

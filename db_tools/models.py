@@ -49,7 +49,7 @@ class Category(TGBase):
 class RawMaterial(TGBase):
     __tablename__: str = 'raw_materials'
     id = Column(INTEGER, primary_key=True, autoincrement=True)
-    name = Column(VARCHAR(32), nullable=False)
+    name = Column(VARCHAR(32), nullable=False, unique=True)
 
     def __repr__(self):
         return f'Сырье/товар:{self.id}-{self.name}'

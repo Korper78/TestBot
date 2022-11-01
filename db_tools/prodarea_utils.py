@@ -7,7 +7,7 @@ class ProdAreaTools:
     @staticmethod
     async def get_prodareas(foundation_id: int) -> list | None:
         prodareas = await DbCRUD.get_all(db_object=ProductionArea)
-        prodareas = [prodarea for prodarea in prodareas if prodarea[0].foundation_id == foundation_id]
+        prodareas = [prodarea[0] for prodarea in prodareas if prodarea[0].foundation_id == foundation_id]
         return prodareas
 
     @staticmethod

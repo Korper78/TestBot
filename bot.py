@@ -1,25 +1,31 @@
-from aiogram import Bot, Dispatcher, executor, types
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from os import getenv
-from sys import exit
-
+from aiogram import executor, types
+# from aiogram.contrib.fsm_storage.memory import MemoryStorage
+# from os import getenv
+# from sys import exit
+from handlers.category_actions import category_handlers_register
+from handlers.product_actions import product_handlers_register
+from handlers.storage_actions import storage_handlers_register
+from loader import dp
 from handlers.commands import start_menu
 from handlers.inline_handlers import inline_handlers_register
 from handlers.foundation_actions import foundation_handlers_register
 from handlers.prodarea_actions import prod_area_handlers_register
 from db_tools.user_utils import UserTools
 
-bot_token = getenv("BOT_TOKEN")
-if not bot_token:
-    exit("Error: no token provided")
-
-storage = MemoryStorage()
-bot = Bot(token=bot_token)
-dp = Dispatcher(bot, storage=storage)
+# bot_token = getenv("BOT_TOKEN")
+# if not bot_token:
+#     exit("Error: no token provided")
+#
+# storage = MemoryStorage()
+# bot = Bot(token=bot_token)
+# dp = Dispatcher(bot, storage=storage)
 
 inline_handlers_register(dp)
 foundation_handlers_register(dp)
 prod_area_handlers_register(dp)
+storage_handlers_register(dp)
+category_handlers_register(dp)
+product_handlers_register(dp)
 
 
 @dp.message_handler(commands="start")

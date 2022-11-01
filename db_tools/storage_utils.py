@@ -7,7 +7,7 @@ class StorageTools:
     @staticmethod
     async def get_storages(foundation_id: int) -> list | None:
         storages = await DbCRUD.get_all(db_object=Storage)
-        storages = [storage for storage in storages if storage[0].foundation_id == foundation_id]
+        storages = [storage[0] for storage in storages if storage[0].foundation_id == foundation_id]
         return storages
 
     @staticmethod
