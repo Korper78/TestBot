@@ -1,5 +1,6 @@
 # from bot import dp
 from aiogram import types, Dispatcher
+from aiogram.dispatcher import FSMContext
 
 from db_tools.prodarea_utils import ProdAreaTools
 from db_tools.storage_utils import StorageTools
@@ -7,7 +8,8 @@ from handlers.category_actions import create_category
 from handlers.commands import start_menu, found_menu, storage_menu, prod_area_menu
 from handlers.foundation_actions import create_foundation
 from handlers.prodarea_actions import create_prod_area, prodarea_total
-from handlers.product_actions import create_product, append_product, ship_product
+from handlers.product_actions import create_product, append_product, ship_product, move_product, move_product_amount, \
+    move_product_instance
 from handlers.storage_actions import create_storage, storage_total, storage_in
 
 from keyboards.inline_kb import foundation_cb, prod_area_cb, storage_cb, store_action_cb, prod_area_action_cb, \
@@ -39,7 +41,10 @@ async def navigate_prod_areas(call: types.CallbackQuery, callback_data: dict):
     else:
         choice = int(choice)
         await call.answer()
-        await prod_area_menu(call.message, choice)
+        if found_id == '0':
+            await move_product_instance(call, choice)
+        else:
+            await prod_area_menu(call.message, choice)
 
 
 async def navigate_storages(call: types.CallbackQuery, callback_data: dict):
@@ -52,8 +57,13 @@ async def navigate_storages(call: types.CallbackQuery, callback_data: dict):
         await start_menu(call)
     else:
         choice = int(choice)
+        # found_id = int(found_id)
         await call.answer()
-        await storage_menu(call.message, choice)
+        if found_id == '0':
+
+            await move_product_instance(call, choice)
+        else:
+            await storage_menu(call.message, choice)
 
 
 async def navigate_store_actions(call: types.CallbackQuery, callback_data: dict):
@@ -141,8 +151,8 @@ async def navigate_product_actions(call: types.CallbackQuery, callback_data: dic
 
 def inline_handlers_register(dp: Dispatcher):
     dp.register_callback_query_handler(navigate_foundations, foundation_cb.filter())
-    dp.register_callback_query_handler(navigate_prod_areas, prod_area_cb.filter())
-    dp.register_callback_query_handler(navigate_storages, storage_cb.filter())
+    dp.register_callback_query_handler(navigate_prod_areas, prod_area_cb.filter(), state='*')
+    dp.register_callback_query_handler(navigate_storages, storage_cb.filter(), state='*')
     dp.register_callback_query_handler(navigate_store_actions, store_action_cb.filter())
     dp.register_callback_query_handler(navigate_prodarea_actions, prod_area_action_cb.filter())
     dp.register_callback_query_handler(navigate_categories, category_cb.filter())

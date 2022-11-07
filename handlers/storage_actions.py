@@ -14,7 +14,8 @@ from db_tools.category_utils import CategoryTools
 from db_tools.product_utils import ProductTools
 from db_tools.storage_utils import StorageTools
 from handlers.commands import found_menu, storage_menu
-from keyboards.inline_kb import make_cb_data, storage_cb, create_cat_kb, create_product_kb, create_product_action_kb
+from keyboards.inline_kb import make_cb_data, storage_cb, create_cat_kb, create_product_kb, create_product_action_kb, \
+    store_action_cb, foundation_cb
 from loader import storage
 
 
@@ -55,7 +56,11 @@ async def enter_storage_address(message: types.Message, state: FSMContext):
                                          foundation_id=store['enter_found_id'])
     print(res)
     await state.finish()
-    await found_menu(message, store['enter_found_id'])
+    kb = types.InlineKeyboardMarkup().add(
+        types.InlineKeyboardButton(text='Вернуться',
+                                   callback_data=make_cb_data(foundation_cb, str(store['enter_found_id']))))
+    await message.answer('Принято', reply_markup=kb)
+    # await found_menu(message, store['enter_found_id'])
 
 
 # async def storage_in(call: types.CallbackQuery, storage_id: int, supercategory: int = None):

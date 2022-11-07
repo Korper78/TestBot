@@ -5,16 +5,40 @@ from db_tools.models import Product, RawMaterial
 class ProductTools:
 
     @staticmethod
+    async def get_products(storage_id: int | None, prodarea_id: int | None) -> list | None:
+        products = await DbCRUD.get_all(db_object=Product)
+        products = [product[0] for product in products if product[0].storage_id == storage_id and
+                    product[0].production_area_id == prodarea_id and
+                    not product[0].is_shipment]
+        return products
+
     async def get_products_by_storage(storage_id: int) -> list | None:
         products = await DbCRUD.get_all(db_object=Product)
-        products = [product[0] for product in products if product[0].storage_id == storage_id]
+        products = [product[0] for product in products if product[0].storage_id == storage_id and
+                    not product[0].is_shipment]
         return products
 
     @staticmethod
     async def get_products_by_prodarea(prodarea_id: int) -> list | None:
         products = await DbCRUD.get_all(db_object=Product)
-        products = [product[0] for product in products if product[0].production_area_id == prodarea_id]
+        products = [product[0] for product in products if product[0].production_area_id == prodarea_id and
+                    not product[0].is_shipment]
         return products
+
+    @staticmethod
+    async def get_products_by_category(category_id: int) -> list | None:
+        products = await DbCRUD.get_all(db_object=Product)
+        products = [product[0] for product in products if product[0].category_id == category_id]
+        return products
+
+    @staticmethod
+    async def get_product_by_shipment(storage_id: int | None, prodarea_id: int | None, name: str) -> Product | None:
+        products = await DbCRUD.get_all(db_object=Product)
+        products = [product[0] for product in products if product[0].is_shipment and
+                    product[0].storage_id == storage_id and
+                    product[0].production_area_id == prodarea_id and
+                    await ProductTools.get_product_name(product[0]) == name]
+        return products[0] if products else None
 
     @staticmethod
     async def get_product(product_id: int) -> Product | None:

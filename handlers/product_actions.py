@@ -7,10 +7,13 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 # cancel_kb = InlineKeyboardMarkup().add(InlineKeyboardButton(text='Отмена', callback_data='found:cancel'))
+from db_tools.prodarea_utils import ProdAreaTools
 from db_tools.product_utils import ProductTools
+from db_tools.storage_utils import StorageTools
 from handlers.storage_actions import storage_in
-from keyboards.inline_kb import make_cb_data, category_cb
-from loader import storage, bot
+from keyboards.inline_kb import make_cb_data, category_cb, store_action_cb, prod_area_action_cb, create_prod_area_kb, \
+    create_storage_kb
+from loader import storage
 
 
 class CreateProduct(StatesGroup):
@@ -20,7 +23,8 @@ class CreateProduct(StatesGroup):
     enter_name = State()
     enter_amount = State()
     append_amount = State()
-    change_amount = State()
+    ship_amount = State()
+    move_amount = State()
 
 
 # async def show_products(message: types.Message, kb: types.InlineKeyboardMarkup):
@@ -42,20 +46,26 @@ async def create_product(call: types.CallbackQuery, supercategory: int, place: s
         storage_id = None
         prodarea_id = int(_place[1])
         products = await ProductTools.get_products_by_prodarea(prodarea_id)
+    products_in_cat = await ProductTools.get_products_by_category(supercategory)
+    names_in_cat = set([await ProductTools.get_product_name(product)
+                        for product in products_in_cat])
+    # if product.storage_id != storage_id and product.production_area_id != prodarea_id]))
+    local_names = set([await ProductTools.get_product_name(product)
+                       for product in products])
+    names = names_in_cat - local_names
     ids = {'category_id': supercategory,
            'storage_id': storage_id,
            'production_area_id': prodarea_id,
-           'place': place}
+           'place': place,
+           'names': names}
     await state.update_data(enter_ids=ids)
     print(await state.get_data())
     # names = await ProductTools.get_product_names()
     await call.message.edit_text('Введите название материала/товара', reply_markup=None)
-    names = [await ProductTools.get_product_name(product)
-             for product in products if product.category_id == supercategory]
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
     # kb.add([types.KeyboardButton(text=name.name) for name in names])
     # kb.add([types.KeyboardButton(text=name) for name in names])
-    kb.add(names)
+    kb.add(*names)
     if names:
         await call.message.answer('или выберите из имеющихся:', reply_markup=kb)
     # await message.answer('Введите или выберите название материала/товара', reply_markup=kb)
@@ -65,7 +75,11 @@ async def create_product(call: types.CallbackQuery, supercategory: int, place: s
 # @dp.message_handler(state=CreateFoundation.enter_name)
 async def enter_product_name(message: types.Message, state: FSMContext):
     name = message.text
-    name_id = await ProductTools.add_product_name(name)
+    data = await state.get_data()
+    if name in data['enter_ids']['names']:
+        name_id = [_name.id for _name in await ProductTools.get_product_names() if _name.name == name][0]
+    else:
+        name_id = await ProductTools.add_product_name(name)
     if name_id:
         async with state.proxy() as data:
             data['enter_name'] = name_id
@@ -126,12 +140,7 @@ async def append_product_amount(message: types.Message, state: FSMContext):
         product = await state.get_data()
         print(product)
         await ProductTools.update_product(product_id=product['enter_ids']['product_id'],
-                                          amount=product['enter_ids']['amount'] + product['append_amount'],
-                                          # material_id=product['enter_name'],
-                                          # category_id=product['ids']['category_id'],
-                                          # storage_id=product['ids']['storage_id'],
-                                          # production_area_id=product['ids']['production_area_id'],
-                                          )
+                                          amount=product['enter_ids']['amount'] + product['append_amount'])
         await state.finish()
         kb = types.InlineKeyboardMarkup().add(
             types.InlineKeyboardButton(text='Вернуться',
@@ -147,18 +156,162 @@ async def append_product_amount(message: types.Message, state: FSMContext):
 async def ship_product(call: types.CallbackQuery, product_id: int):
     product = await ProductTools.get_product(product_id)
     name = await ProductTools.get_product_name(product)
+    # place = 'storage_' + str(product.storage_id) if product.storage_id else 'prodarea_' + str(
+    #     product.production_area_id)
+    ids = {'product_id': product_id,
+           'amount': product.amount}
+    # 'category_id': product.category_id,
+    # 'place': place}
     state = FSMContext(storage=storage, chat=call.from_user.id, user=call.from_user.id)
     await CreateProduct.enter_ids.set()
-    ids = {'product_id': product_id,
-           'amount': product.amount,
-           'category_id': product.category_id,
-           'place': place}
     await state.update_data(enter_ids=ids)
     await call.message.edit_text(f'Имеется {product.amount} товара {name}, сколько отгрузить?', reply_markup=None)
-    await CreateProduct.change_amount.set()
+    await CreateProduct.ship_amount.set()
+
+
+async def ship_product_amount(message: types.Message, state: FSMContext):
+    amount = message.text
+    try:
+        async with state.proxy() as data:
+            data['ship_amount'] = int(amount)
+        prod = await state.get_data()
+        print(prod)
+        new_amount = prod['enter_ids']['amount'] - prod['ship_amount']
+        if new_amount < 0 or new_amount == prod['enter_ids']['amount']:
+            raise ValueError()
+            # await message.answer('Столько нет в наличии. Повторите ввод:')
+            # await CreateProduct.append_amount.set()
+        else:
+            product = await ProductTools.get_product(prod['enter_ids']['product_id'])
+            name = await ProductTools.get_product_name(product)
+            shiped_product = await ProductTools.get_product_by_shipment(product.storage_id,
+                                                                        product.production_area_id,
+                                                                        name)
+            if shiped_product is None:
+                shiped_product = await ProductTools.add_product(amount=prod['ship_amount'],
+                                                                material_id=product.material_id,
+                                                                category_id=product.category_id,
+                                                                storage_id=product.storage_id,
+                                                                production_area_id=product.production_area_id,
+                                                                is_shipment=True)
+                shiped_product = await ProductTools.get_product(shiped_product)
+            else:
+                await ProductTools.update_product(product_id=shiped_product.id,
+                                                  amount=shiped_product.amount + prod['ship_amount'],
+                                                  is_shipment=True)
+            if new_amount:
+                await ProductTools.update_product(product_id=product.id,
+                                                  amount=new_amount)
+            else:
+                await ProductTools.del_product(product)
+            await state.finish()
+            callback_data = make_cb_data(store_action_cb,
+                                         'total',
+                                         shiped_product.storage_id) if shiped_product.storage_id else make_cb_data(
+                prod_area_action_cb,
+                'total',
+                shiped_product.production_area_id)
+            kb = types.InlineKeyboardMarkup().add(types.InlineKeyboardButton(text='Вернуться',
+                                                                             callback_data=callback_data))
+            await message.answer('Принято', reply_markup=kb)
+    except ValueError:
+        await message.answer('Неверное значение. Повторите ввод:')
+        await CreateProduct.ship_amount.set()
+
+
+async def move_product(call: types.CallbackQuery, product_id: int):
+    product = await ProductTools.get_product(product_id)
+    name = await ProductTools.get_product_name(product)
+    ids = {'product_id': product_id,
+           'amount': product.amount,
+           'name': name}
+    if product.storage_id:
+        store = await StorageTools.get_storage(product.storage_id)
+        prodareas = await ProdAreaTools.get_prodareas(store.foundation_id)
+        kb = create_prod_area_kb(prodareas, 0)
+        del kb.inline_keyboard[-1]
+        # ids['place'] = 'storage_' + str(store.id)
+    else:
+        prodarea = await ProdAreaTools.get_prodarea(product.production_area_id)
+        stores = await StorageTools.get_storages(prodarea.foundation_id)
+        kb = create_storage_kb(stores, 0)
+        del kb.inline_keyboard[-2:]
+        # ids['place'] = 'prodarea_' + str(prodarea.id)
+    state = FSMContext(storage=storage, chat=call.from_user.id, user=call.from_user.id)
+    await call.message.edit_text('Куда отгрузить?', reply_markup=kb)
+    await CreateProduct.enter_ids.set()
+    await state.update_data(enter_ids=ids)
+
+
+async def move_product_instance(call: types.CallbackQuery, instance_id: int):
+    state = FSMContext(storage=storage, chat=call.from_user.id, user=call.from_user.id)
+    ids = await state.get_data()
+    ids['enter_ids']['instance_id'] = instance_id
+    await state.update_data(enter_ids=ids['enter_ids'])
+    await call.message.edit_text(f"Имеется {ids['enter_ids']['amount']} товара {ids['enter_ids']['name']},"
+                                 f" сколько переместить?", reply_markup=None)
+    await CreateProduct.move_amount.set()
+
+
+async def move_product_amount(message: types.Message, state: FSMContext):
+    amount = message.text
+    try:
+        async with state.proxy() as data:
+            data['move_amount'] = int(amount)
+        prod = await state.get_data()
+        print(prod)
+        new_amount = prod['enter_ids']['amount'] - prod['move_amount']
+        if new_amount < 0 or new_amount == prod['enter_ids']['amount']:
+            raise ValueError()
+            # await message.answer('Столько нет в наличии. Повторите ввод:')
+            # await CreateProduct.append_amount.set()
+        else:
+            from_product = await ProductTools.get_product(prod['enter_ids']['product_id'])
+            name = await ProductTools.get_product_name(from_product)
+            # place = prod['enter_ids']['place'].split('_')
+            instance_id = prod['enter_ids']['instance_id']
+            # if place[0] == 'storage':
+            if from_product.storage_id:
+                to_products = await ProductTools.get_products_by_prodarea(instance_id)
+            else:
+                to_products = await ProductTools.get_products_by_storage(instance_id)
+            # to_product = [product for product in to_products if await ProductTools.get_product_name(product) == name][0]
+            to_product = [product for product in to_products if await ProductTools.get_product_name(product) == name]
+            # if to_product is None:
+            if not to_product:
+                to_product = await ProductTools.add_product(amount=prod['move_amount'],
+                                                            material_id=from_product.material_id,
+                                                            category_id=from_product.category_id,
+                                                            storage_id=None if from_product.storage_id else instance_id,
+                                                            production_area_id=None if from_product.production_area_id else instance_id)
+                to_product = await ProductTools.get_product(to_product)
+            else:
+                to_product = to_product[0]
+                await ProductTools.update_product(product_id=to_product.id,
+                                                  amount=to_product.amount + prod['move_amount'])
+            if new_amount:
+                await ProductTools.update_product(product_id=from_product.id,
+                                                  amount=new_amount)
+            else:
+                await ProductTools.del_product(from_product)
+            await state.finish()
+            callback_data = make_cb_data(store_action_cb,
+                                         'total',
+                                         to_product.storage_id) if to_product.storage_id else make_cb_data(
+                prod_area_action_cb,
+                'total',
+                to_product.production_area_id)
+            kb = types.InlineKeyboardMarkup().add(types.InlineKeyboardButton(text='Вернуться',
+                                                                             callback_data=callback_data))
+            await message.answer('Принято', reply_markup=kb)
+    except ValueError:
+        await message.answer('Неверное значение. Повторите ввод:')
+        await CreateProduct.move_amount.set()
 
 
 def product_handlers_register(dp: Dispatcher):
     dp.register_message_handler(enter_product_name, state=CreateProduct.enter_name)
     dp.register_message_handler(enter_product_amount, state=CreateProduct.enter_amount)
     dp.register_message_handler(append_product_amount, state=CreateProduct.append_amount)
+    dp.register_message_handler(ship_product_amount, state=CreateProduct.ship_amount)
+    dp.register_message_handler(move_product_amount, state=CreateProduct.move_amount)

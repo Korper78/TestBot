@@ -37,7 +37,7 @@ def create_prod_area_kb(prod_areas: list[ProductionArea], found_id: int) -> Inli
     kb = InlineKeyboardMarkup(row_width=1)
     for prod_area in prod_areas:
         # cb = make_cb_data(prod_area_cb, str(prod_area.id), str(found_id))
-        cb = make_cb_data(prod_area_cb, str(prod_area.id), '')
+        cb = make_cb_data(prod_area_cb, str(prod_area.id), str(found_id))
         kb.insert(InlineKeyboardButton(text=prod_area.name, callback_data=cb))
     kb.insert(InlineKeyboardButton(text='Новое производство',
                                    callback_data=make_cb_data(prod_area_cb, 'new', str(found_id))))
@@ -50,7 +50,7 @@ def create_storage_kb(storages: list[Storage], found_id: int) -> InlineKeyboardM
     kb = InlineKeyboardMarkup(row_width=1)
     for storage in storages:
         # cb = make_cb_data(storage_cb, str(storage.id), str(found_id))
-        cb = make_cb_data(storage_cb, str(storage.id), '')
+        cb = make_cb_data(storage_cb, str(storage.id), str(found_id))
         kb.insert(InlineKeyboardButton(text=storage.name, callback_data=cb))
     kb.insert(InlineKeyboardButton(text='Новый склад',
                                    callback_data=make_cb_data(storage_cb, 'new', str(found_id))))
@@ -118,7 +118,7 @@ def create_product_kb(products: list, place: str, supercategory: int) -> InlineK
 
 def create_product_action_kb(product_id: int, name: str, category: str, amount: int) -> InlineKeyboardMarkup:
     kb = InlineKeyboardMarkup(row_width=2)
-    kb.row(InlineKeyboardButton(text=f'{name} в категории {category}, в количестве {amount}',
+    kb.row(InlineKeyboardButton(text=f'{name}, {amount}т\nв категории {category}',
                                 callback_data='*'))
     kb.add(InlineKeyboardButton(text='Отгрузить',
                                 callback_data=make_cb_data(prod_action_cb, 'ship', str(product_id))),

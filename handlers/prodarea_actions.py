@@ -14,7 +14,7 @@ from db_tools.category_utils import CategoryTools
 from db_tools.prodarea_utils import ProdAreaTools
 from db_tools.product_utils import ProductTools
 from handlers.commands import found_menu, prod_area_menu
-from keyboards.inline_kb import make_cb_data, prod_area_cb, create_product_action_kb
+from keyboards.inline_kb import make_cb_data, prod_area_cb, create_product_action_kb, foundation_cb
 from loader import storage
 
 
@@ -44,7 +44,11 @@ async def enter_prod_area_name(message: types.Message, state: FSMContext):
                                            foundation_id=prod_area['enter_found_id'])
     print(res)
     await state.finish()
-    await found_menu(message, prod_area['enter_found_id'])
+    kb = types.InlineKeyboardMarkup().add(
+        types.InlineKeyboardButton(text='Вернуться',
+                                   callback_data=make_cb_data(foundation_cb, str(prod_area['enter_found_id']))))
+    await message.answer('Принято', reply_markup=kb)
+    # await found_menu(message, prod_area['enter_found_id'])
 
 
 async def prodarea_total(message: types.Message, prodarea_id: int):
