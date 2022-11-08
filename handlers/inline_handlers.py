@@ -7,9 +7,9 @@ from db_tools.storage_utils import StorageTools
 from handlers.category_actions import create_category
 from handlers.commands import start_menu, found_menu, storage_menu, prod_area_menu
 from handlers.foundation_actions import create_foundation
-from handlers.prodarea_actions import create_prod_area, prodarea_total
+from handlers.prodarea_actions import create_prod_area, prodarea_total, prodarea_produce
 from handlers.product_actions import create_product, append_product, ship_product, move_product, move_product_amount, \
-    move_product_instance
+    move_product_instance, produce_product
 from handlers.storage_actions import create_storage, storage_total, storage_in
 
 from keyboards.inline_kb import foundation_cb, prod_area_cb, storage_cb, store_action_cb, prod_area_action_cb, \
@@ -156,6 +156,6 @@ def inline_handlers_register(dp: Dispatcher):
     dp.register_callback_query_handler(navigate_store_actions, store_action_cb.filter())
     dp.register_callback_query_handler(navigate_prodarea_actions, prod_area_action_cb.filter())
     dp.register_callback_query_handler(navigate_categories, category_cb.filter())
-    dp.register_callback_query_handler(navigate_products, product_cb.filter())
+    dp.register_callback_query_handler(navigate_products, product_cb.filter(), state='*')
     dp.register_callback_query_handler(navigate_product_actions, prod_action_cb.filter())
 
