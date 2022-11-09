@@ -7,8 +7,10 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 
 # cancel_kb = InlineKeyboardMarkup().add(InlineKeyboardButton(text='Отмена', callback_data='found:cancel'))
-from db_tools.foundation_utils import FoundTools
-from handlers.commands import start_menu
+# from db_tools.foundation_utils import FoundTools
+from db_tools import FoundTools
+# from handlers.menues import start_menu
+from handlers import start_menu
 
 
 class CreateFoundation(StatesGroup):

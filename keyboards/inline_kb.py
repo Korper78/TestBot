@@ -1,7 +1,8 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
-from db_tools.models import Foundation, Category, ProductionArea, Storage, Product
+# from db_tools.models import Foundation, Category, ProductionArea, Storage, Product
+from db_tools import Foundation, Category, ProductionArea, Storage, Product
 
 foundation_cb = CallbackData('found', 'choice')
 prod_area_cb = CallbackData('prod_area', 'found_id', 'choice')
@@ -101,7 +102,7 @@ def create_cat_kb(categories: list[Category], place: str, supercategory: int) ->
     return kb
 
 
-def create_product_kb(products: list, place: str, supercategory: int) -> InlineKeyboardMarkup:
+def create_product_kb(products: list[(Product, str)], place: str, supercategory: int) -> InlineKeyboardMarkup:
     kb = InlineKeyboardMarkup(row_width=1)
     for product in products:
         cb = make_cb_data(product_cb, str(product[0].id), place)

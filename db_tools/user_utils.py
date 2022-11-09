@@ -11,7 +11,7 @@ class UserTools:
     @staticmethod
     async def add_user(user_id: int,
                        username: str,
-                       role: int = 2) -> bool:
+                       role: int = 2) -> int | None:
         user = User(id=user_id, username=username, role_id=role)
         return await DbCRUD.add(db_object=user)
 

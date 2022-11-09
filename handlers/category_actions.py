@@ -8,10 +8,12 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 
 # cancel_kb = InlineKeyboardMarkup().add(InlineKeyboardButton(text='Отмена', callback_data='found:cancel'))
 
-from db_tools.category_utils import CategoryTools
-from handlers.storage_actions import storage_in
-from keyboards.inline_kb import make_cb_data, category_cb
-from loader import storage, bot
+# from db_tools.category_utils import CategoryTools
+from db_tools import CategoryTools
+# from handlers.storage_actions import storage_in
+# from keyboards.inline_kb import make_cb_data, category_cb
+from keyboards import make_cb_data, category_cb
+from loader import storage
 
 
 class CreateCategory(StatesGroup):

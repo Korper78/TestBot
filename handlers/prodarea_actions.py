@@ -10,11 +10,14 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 # cancel_kb = InlineKeyboardMarkup().add(InlineKeyboardButton(text='Отмена', callback_data='found:cancel'))
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from db_tools.category_utils import CategoryTools
-from db_tools.prodarea_utils import ProdAreaTools
-from db_tools.product_utils import ProductTools
-from handlers.commands import found_menu, prod_area_menu
-from keyboards.inline_kb import make_cb_data, prod_area_cb, create_product_action_kb, foundation_cb, create_product_kb, \
+# from db_tools.category_utils import CategoryTools
+# from db_tools.prodarea_utils import ProdAreaTools
+# from db_tools.product_utils import ProductTools
+from db_tools import ProdAreaTools, CategoryTools, ProductTools
+# from handlers.menues import found_menu, prod_area_menu
+# from keyboards.inline_kb import make_cb_data, prod_area_cb, create_product_action_kb, foundation_cb, create_product_kb, \
+#     create_cat_kb
+from keyboards import make_cb_data, prod_area_cb, create_product_action_kb, foundation_cb, create_product_kb, \
     create_cat_kb
 from loader import storage
 

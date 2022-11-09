@@ -1,18 +1,26 @@
 # from bot import dp
 from aiogram import types, Dispatcher
-from aiogram.dispatcher import FSMContext
+# from aiogram.dispatcher import FSMContext
 
-from db_tools.prodarea_utils import ProdAreaTools
-from db_tools.storage_utils import StorageTools
-from handlers.category_actions import create_category
-from handlers.commands import start_menu, found_menu, storage_menu, prod_area_menu
-from handlers.foundation_actions import create_foundation
-from handlers.prodarea_actions import create_prod_area, prodarea_total, prodarea_produce
-from handlers.product_actions import create_product, append_product, ship_product, move_product, move_product_amount, \
-    move_product_instance, produce_product
-from handlers.storage_actions import create_storage, storage_total, storage_in
+# from db_tools.prodarea_utils import ProdAreaTools
+# from db_tools.storage_utils import StorageTools
+from db_tools import ProdAreaTools, StorageTools
 
-from keyboards.inline_kb import foundation_cb, prod_area_cb, storage_cb, store_action_cb, prod_area_action_cb, \
+# from handlers.category_actions import create_category
+# from handlers.menues import start_menu, found_menu, storage_menu, prod_area_menu
+# from handlers.foundation_actions import create_foundation
+# from handlers.prodarea_actions import create_prod_area, prodarea_total, prodarea_produce
+# from handlers.product_actions import create_product, append_product, ship_product, move_product, move_product_amount, \
+#     move_product_instance, produce_product
+# from handlers.storage_actions import create_storage, storage_total, storage_in
+from handlers import start_menu, found_menu, storage_menu, prod_area_menu
+from handlers import create_foundation, create_prod_area, create_storage, create_category, create_product
+from handlers import prodarea_total, prodarea_produce, storage_total, storage_in
+from handlers import append_product, ship_product, move_product, move_product_instance, produce_product
+
+# from keyboards.inline_kb import foundation_cb, prod_area_cb, storage_cb, store_action_cb, prod_area_action_cb, \
+#     category_cb, product_cb, prod_action_cb
+from keyboards import foundation_cb, prod_area_cb, storage_cb, store_action_cb, prod_area_action_cb, \
     category_cb, product_cb, prod_action_cb
 
 

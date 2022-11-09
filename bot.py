@@ -1,16 +1,20 @@
 from aiogram import executor, types
+from loader import dp
 # from aiogram.contrib.fsm_storage.memory import MemoryStorage
 # from os import getenv
 # from sys import exit
-from handlers.category_actions import category_handlers_register
-from handlers.product_actions import product_handlers_register
-from handlers.storage_actions import storage_handlers_register
-from loader import dp
-from handlers.commands import start_menu
-from handlers.inline_handlers import inline_handlers_register
-from handlers.foundation_actions import foundation_handlers_register
-from handlers.prodarea_actions import prod_area_handlers_register
-from db_tools.user_utils import UserTools
+# from handlers.menues import start_menu
+# from handlers.category_actions import category_handlers_register
+# from handlers.product_actions import product_handlers_register
+# from handlers.storage_actions import storage_handlers_register
+# from handlers.inline_handlers import inline_handlers_register
+# from handlers.foundation_actions import foundation_handlers_register
+# from handlers.prodarea_actions import prod_area_handlers_register
+from handlers import start_menu
+from handlers import inline_handlers_register, foundation_handlers_register, prod_area_handlers_register
+from handlers import storage_handlers_register, category_handlers_register, product_handlers_register
+# from db_tools.user_utils import UserTools
+from db_tools import UserTools
 
 # bot_token = getenv("BOT_TOKEN")
 # if not bot_token:
